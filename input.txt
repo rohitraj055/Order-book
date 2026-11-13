@@ -1,14 +1,23 @@
-# resting orders
+# Add resting sell orders
 SELL 1 101 10
 SELL 2 102 5
+
+# Add a resting buy order
 BUY 3 99 8
 PRINT
 
-# this buy crosses the spread
+# Incoming buy matches two sell orders
 BUY 4 102 12
 PRINT
 
+# Test cancellation
 CANCEL 3
 CANCEL 3
-CANCEL 1
+CANCEL 2
+PRINT
+
+# Demonstrate FIFO priority and partial execution
+SELL 5 100 5
+SELL 6 100 5
+BUY 7 100 7
 PRINT

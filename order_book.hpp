@@ -3,19 +3,20 @@
 #include <list>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 
 enum class Side { Buy, Sell };
 
 struct Order {
     int id;
     Side side;
-    long long price; 
+    long long price;
     int quantity;
 };
 
 class OrderBook {
 public:
-    void addOrder(const Order& order);
+    bool addOrder(const Order& order);
     bool cancelOrder(int id);
     void printBook() const;
 
@@ -30,4 +31,5 @@ private:
     std::map<long long, std::list<Order>> asks_;
     std::map<long long, std::list<Order>, std::greater<long long>> bids_;
     std::unordered_map<int, Location> lookup_;
+    std::unordered_set<int> usedIds_;
 };
