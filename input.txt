@@ -1,0 +1,14 @@
+# resting orders
+SELL 1 101 10
+SELL 2 102 5
+BUY 3 99 8
+PRINT
+
+# this buy crosses the spread
+BUY 4 102 12
+PRINT
+
+CANCEL 3
+CANCEL 3
+CANCEL 1
+PRINT

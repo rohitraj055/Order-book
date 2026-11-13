@@ -1,23 +1,67 @@
 #include "order_book.hpp"
 
+#include <algorithm>
+#include <cctype>
+#include <fstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
-int main() {
+// Commands (one per line, '#' starts a comment):
+//   BUY    <id> <price> <qty>
+//   SELL   <id> <price> <qty>
+//   CANCEL <id>
+//   PRINT
+// Usage: ./orderbook input.txt      (or pipe commands via stdin)
+
+static void processLine(OrderBook& book, const std::string& line, int lineNo) {
+    std::istringstream in(line);
+    std::string cmd;
+    if (!(in >> cmd) || cmd[0] == '#') return;  // blank line or comment
+
+    std::transform(cmd.begin(), cmd.end(), cmd.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
+
+    if (cmd == "BUY" || cmd == "SELL") {
+        int id, qty;
+        long long price;
+        if (!(in >> id >> price >> qty) || price <= 0 || qty <= 0) {
+            std::cerr << "line " << lineNo << ": usage: " << cmd
+                      << " <id> <price> <qty> (price and qty must be > 0)\n";
+            return;
+        }
+        book.addOrder({id, cmd == "BUY" ? Side::Buy : Side::Sell, price, qty});
+    } else if (cmd == "CANCEL") {
+        int id;
+        if (!(in >> id)) {
+            std::cerr << "line " << lineNo << ": usage: CANCEL <id>\n";
+            return;
+        }
+        std::cout << "CANCEL #" << id << ": "
+                  << (book.cancelOrder(id) ? "ok" : "not found") << "\n";
+    } else if (cmd == "PRINT") {
+        book.printBook();
+    } else {
+        std::cerr << "line " << lineNo << ": unknown command '" << cmd << "'\n";
+    }
+}
+
+int main(int argc, char* argv[]) {
+    std::ifstream file;
+    std::istream* input = &std::cin;
+
+    if (argc > 1) {
+        file.open(argv[1]);
+        if (!file) {
+            std::cerr << "cannot open " << argv[1] << "\n";
+            return 1;
+        }
+        input = &file;
+    }
+
     OrderBook book;
-
-    book.addOrder({1, Side::Sell, 101, 10});
-    book.addOrder({2, Side::Sell, 102, 5});
-    book.addOrder({3, Side::Buy, 99, 8});
-    book.printBook();
-
-    // Crosses the spread: buy 12 @ 102 -> fills 10 @ 101, then 2 @ 102
-    book.addOrder({4, Side::Buy, 102, 12});
-    book.printBook();
-
-    // Cancel tests
-    std::cout << "cancel #3: " << (book.cancelOrder(3) ? "ok" : "not found") << "\n";
-    std::cout << "cancel #3 again: " << (book.cancelOrder(3) ? "ok" : "not found") << "\n";
-    std::cout << "cancel #1 (already filled): " << (book.cancelOrder(1) ? "ok" : "not found") << "\n";
-    book.printBook();
+    std::string line;
+    int lineNo = 0;
+    while (std::getline(*input, line)) processLine(book, line, ++lineNo);
     return 0;
 }
