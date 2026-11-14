@@ -204,6 +204,11 @@ bool OrderBook::cancelOrder(int id) {
 }
 
 // Highest price someone is willing to pay.
+// Avoids repeated hash-table resizing when the number of orders is known.
+void OrderBook::reserve(std::size_t expectedOrders) {
+    lookup_.reserve(expectedOrders);
+    usedIds_.reserve(expectedOrders);
+}
 std::optional<long long> OrderBook::bestBid() const {
     if (bids_.empty()) {
         return std::nullopt;

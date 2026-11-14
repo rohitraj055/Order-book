@@ -67,6 +67,7 @@ int main(int argc, char* argv[]) {
     std::vector<Op> ops = generateOps(count);
 
     OrderBook book;
+    book.reserve(static_cast<std::size_t>(count));
     std::vector<Trade> trades;
     long long tradeCount = 0;
     long long tradedQuantity = 0;

@@ -37,6 +37,8 @@ public:
     AddResult addMarketOrder(int id, Side side, int quantity, std::vector<Trade>& trades);
     bool cancelOrder(int id);
     void printBook() const;
+        // Pre-allocates the id tables for about `expectedOrders` orders (optional).
+    void reserve(std::size_t expectedOrders);
 
     // Top of the book. Empty optional if that side has no orders.
     std::optional<long long> bestBid() const;
