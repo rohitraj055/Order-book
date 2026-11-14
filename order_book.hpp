@@ -2,6 +2,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -36,6 +37,12 @@ public:
     AddResult addMarketOrder(int id, Side side, int quantity, std::vector<Trade>& trades);
     bool cancelOrder(int id);
     void printBook() const;
+
+    // Top of the book. Empty optional if that side has no orders.
+    std::optional<long long> bestBid() const;
+    std::optional<long long> bestAsk() const;
+    // bestAsk - bestBid; empty if either side is empty.
+    std::optional<long long> spread() const;
 
 private:
     // Where a resting order lives, so cancel doesn't have to scan the book.

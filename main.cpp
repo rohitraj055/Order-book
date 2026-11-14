@@ -4,6 +4,7 @@
 #include <cctype>
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -14,6 +15,7 @@
 //   MARKET <BUY|SELL> <id> <qty>
 //   CANCEL <id>
 //   PRINT
+//   BEST
 // Usage: ./orderbook input.txt (or pipe commands via stdin)
 
 static void printTrades(const std::vector<Trade>& trades) {
@@ -22,6 +24,14 @@ static void printTrades(const std::vector<Trade>& trades) {
                   << " sell#" << t.sellId
                   << " price=" << t.price
                   << " qty=" << t.quantity << "\n";
+    }
+}
+
+static void printOptional(const std::optional<long long>& value) {
+    if (value) {
+        std::cout << *value;
+    } else {
+        std::cout << "-";
     }
 }
 
@@ -138,6 +148,23 @@ static void processLine(OrderBook& book, const std::string& line, int lineNo) {
         }
 
         book.printBook();
+
+    } else if (cmd == "BEST") {
+        // BEST must not have additional arguments.
+        std::string extra;
+        if (in >> extra) {
+            std::cerr << "line " << lineNo
+                      << ": unexpected extra argument '" << extra << "'\n";
+            return;
+        }
+
+        std::cout << "BEST BID: ";
+        printOptional(book.bestBid());
+        std::cout << " | ASK: ";
+        printOptional(book.bestAsk());
+        std::cout << " | SPREAD: ";
+        printOptional(book.spread());
+        std::cout << "\n";
 
     } else {
         std::cerr << "line " << lineNo

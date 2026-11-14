@@ -259,6 +259,64 @@ static void testMarketOrderValidation() {
     addMarket(book, 4, Side::Buy, 1, AddResult::DuplicateId);
 }
 
+// ---- best bid / best ask / spread tests ----
+
+static void testEmptyBookHasNoBestPrices() {
+    OrderBook book;
+    CHECK(!book.bestBid().has_value());
+    CHECK(!book.bestAsk().has_value());
+    CHECK(!book.spread().has_value());
+}
+
+static void testBestPricesAndSpread() {
+    OrderBook book;
+    add(book, 1, Side::Buy, 98, 5);
+    add(book, 2, Side::Buy, 99, 5);   // best bid
+    add(book, 3, Side::Sell, 103, 5);
+    add(book, 4, Side::Sell, 102, 5); // best ask
+    CHECK(book.bestBid() == 99);
+    CHECK(book.bestAsk() == 102);
+    CHECK(book.spread() == 3);
+}
+
+static void testBestPriceOnOneSideOnly() {
+    OrderBook book;
+    add(book, 1, Side::Buy, 99, 5);
+    CHECK(book.bestBid() == 99);
+    CHECK(!book.bestAsk().has_value());
+    CHECK(!book.spread().has_value());  // needs both sides
+}
+
+static void testBestPricesUpdateAfterTradesAndCancels() {
+    OrderBook book;
+    add(book, 1, Side::Buy, 99, 5);
+    add(book, 2, Side::Buy, 98, 5);
+    add(book, 3, Side::Sell, 102, 5);
+    add(book, 4, Side::Sell, 103, 5);
+
+    // a sell at 99 eats the whole best bid level
+    add(book, 5, Side::Sell, 99, 5);
+    CHECK(book.bestBid() == 98);
+
+    // cancelling the best ask moves the best ask up
+    CHECK(book.cancelOrder(3));
+    CHECK(book.bestAsk() == 103);
+    CHECK(book.spread() == 5);
+
+    // market order empties the ask side
+    addMarket(book, 6, Side::Buy, 100);
+    CHECK(!book.bestAsk().has_value());
+    CHECK(book.bestBid() == 98);
+}
+
+static void testBookIsNeverCrossedAfterMatching() {
+    OrderBook book;
+    add(book, 1, Side::Sell, 100, 5);
+    add(book, 2, Side::Buy, 105, 8);  // eats the ask, rests 3 at 105
+    CHECK(book.bestBid() == 105);
+    CHECK(!book.bestAsk().has_value());
+}
+
 int main() {
     struct { const char* name; void (*fn)(); } tests[] = {
         {"full match", testFullMatch},
@@ -280,6 +338,11 @@ int main() {
         {"market order on empty book", testMarketOrderOnEmptyBook},
         {"market order FIFO and partial fill", testMarketOrderFifoAndPartialFill},
         {"market order validation", testMarketOrderValidation},
+        {"empty book has no best prices", testEmptyBookHasNoBestPrices},
+        {"best prices and spread", testBestPricesAndSpread},
+        {"best price on one side only", testBestPriceOnOneSideOnly},
+        {"best prices update after trades and cancels", testBestPricesUpdateAfterTradesAndCancels},
+        {"book is not crossed after matching", testBookIsNeverCrossedAfterMatching},
     };
 
     for (const auto& t : tests) {

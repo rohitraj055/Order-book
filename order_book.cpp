@@ -203,6 +203,32 @@ bool OrderBook::cancelOrder(int id) {
     return true;
 }
 
+// Highest price someone is willing to pay.
+std::optional<long long> OrderBook::bestBid() const {
+    if (bids_.empty()) {
+        return std::nullopt;
+    }
+    return bids_.begin()->first;  // bids_ is sorted highest first
+}
+
+// Lowest price someone is willing to sell at.
+std::optional<long long> OrderBook::bestAsk() const {
+    if (asks_.empty()) {
+        return std::nullopt;
+    }
+    return asks_.begin()->first;  // asks_ is sorted lowest first
+}
+
+// Gap between best ask and best bid.
+std::optional<long long> OrderBook::spread() const {
+    auto bid = bestBid();
+    auto ask = bestAsk();
+    if (!bid || !ask) {
+        return std::nullopt;
+    }
+    return *ask - *bid;
+}
+
 // Display the current order book.
 void OrderBook::printBook() const {
 
