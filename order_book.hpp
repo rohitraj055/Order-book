@@ -4,6 +4,7 @@
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 enum class Side { Buy, Sell };
 
@@ -14,9 +15,21 @@ struct Order {
     int quantity;
 };
 
+// One executed trade (always at the resting order's price).
+struct Trade {
+    int buyId;
+    int sellId;
+    long long price;
+    int quantity;
+};
+
+enum class AddResult { Ok, InvalidOrder, DuplicateId };
+
 class OrderBook {
 public:
-    bool addOrder(const Order& order);
+    // Matches the order against the book. Executed trades are appended to `trades`.
+    // Any unfilled quantity rests on the book.
+    AddResult addOrder(const Order& order, std::vector<Trade>& trades);
     bool cancelOrder(int id);
     void printBook() const;
 

@@ -8,7 +8,8 @@ namespace {
 
 // Matches an incoming order against one side of the book.
 template <typename Book, typename Lookup, typename CanMatch>
-void matchAgainst(Book& book, Lookup& lookup, Order& incoming, CanMatch canMatch) {
+void matchAgainst(Book& book, Lookup& lookup, Order& incoming,
+                  std::vector<Trade>& trades, CanMatch canMatch) {
 
     while (incoming.quantity > 0 && !book.empty()) {
 
@@ -34,11 +35,8 @@ void matchAgainst(Book& book, Lookup& lookup, Order& incoming, CanMatch canMatch
             int sellId = (incoming.side == Side::Buy)
                              ? resting.id : incoming.id;
 
-            // Execute trade at the resting order's price.
-            std::cout << "TRADE buy#" << buyId
-                      << " sell#" << sellId
-                      << " price=" << resting.price
-                      << " qty=" << qty << "\n";
+            // Record the trade at the resting order's price.
+            trades.push_back({buyId, sellId, resting.price, qty});
 
             incoming.quantity -= qty;
             resting.quantity -= qty;
@@ -60,20 +58,16 @@ void matchAgainst(Book& book, Lookup& lookup, Order& incoming, CanMatch canMatch
 } // namespace
 
 // Add a new order and execute matching trades.
-bool OrderBook::addOrder(const Order& order) {
+AddResult OrderBook::addOrder(const Order& order, std::vector<Trade>& trades) {
 
     // Reject invalid orders.
     if (order.price <= 0 || order.quantity <= 0) {
-        return false;
-    }
-        // Reject invalid order sides.
-    if (order.side != Side::Buy && order.side != Side::Sell) {
-        return false;
+        return AddResult::InvalidOrder;
     }
 
     // Reject previously used order IDs.
     if (!usedIds_.insert(order.id).second) {
-        return false;
+        return AddResult::DuplicateId;
     }
 
     // Create a local copy because matching changes its quantity.
@@ -86,6 +80,7 @@ bool OrderBook::addOrder(const Order& order) {
             asks_,
             lookup_,
             incoming,
+            trades,
             [&](long long askPrice) {
                 return askPrice <= incoming.price;
             }
@@ -112,6 +107,7 @@ bool OrderBook::addOrder(const Order& order) {
             bids_,
             lookup_,
             incoming,
+            trades,
             [&](long long bidPrice) {
                 return bidPrice >= incoming.price;
             }
@@ -132,7 +128,7 @@ bool OrderBook::addOrder(const Order& order) {
         }
     }
 
-    return true;
+    return AddResult::Ok;
 }
 
 // Cancel an existing resting order.

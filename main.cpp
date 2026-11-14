@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 // Commands (one per line, '#' starts a comment):
 //   BUY    <id> <price> <qty>
@@ -45,14 +46,22 @@ static void processLine(OrderBook& book, const std::string& line, int lineNo) {
             return;
         }
 
-        if (!book.addOrder({
-                id,
-                cmd == "BUY" ? Side::Buy : Side::Sell,
-                price,
-                qty
-            })) {
+        std::vector<Trade> trades;
+        AddResult result = book.addOrder(
+            {id, cmd == "BUY" ? Side::Buy : Side::Sell, price, qty}, trades);
+
+        for (const Trade& t : trades) {
+            std::cout << "TRADE buy#" << t.buyId
+                      << " sell#" << t.sellId
+                      << " price=" << t.price
+                      << " qty=" << t.quantity << "\n";
+        }
+
+        if (result == AddResult::DuplicateId) {
             std::cerr << "line " << lineNo
                       << ": duplicate order ID " << id << "\n";
+        } else if (result == AddResult::InvalidOrder) {
+            std::cerr << "line " << lineNo << ": invalid order\n";
         }
 
     } else if (cmd == "CANCEL") {
