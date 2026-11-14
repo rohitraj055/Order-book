@@ -30,6 +30,10 @@ public:
     // Matches the order against the book. Executed trades are appended to `trades`.
     // Any unfilled quantity rests on the book.
     AddResult addOrder(const Order& order, std::vector<Trade>& trades);
+    // Market order: no price limit, buys/sells at the best prices available.
+    // It never rests on the book; any quantity that cannot be filled is dropped.
+    // The quantity actually filled is the sum of the trades appended to `trades`.
+    AddResult addMarketOrder(int id, Side side, int quantity, std::vector<Trade>& trades);
     bool cancelOrder(int id);
     void printBook() const;
 

@@ -11,9 +11,28 @@
 // Commands (one per line, '#' starts a comment):
 //   BUY    <id> <price> <qty>
 //   SELL   <id> <price> <qty>
+//   MARKET <BUY|SELL> <id> <qty>
 //   CANCEL <id>
 //   PRINT
 // Usage: ./orderbook input.txt (or pipe commands via stdin)
+
+static void printTrades(const std::vector<Trade>& trades) {
+    for (const Trade& t : trades) {
+        std::cout << "TRADE buy#" << t.buyId
+                  << " sell#" << t.sellId
+                  << " price=" << t.price
+                  << " qty=" << t.quantity << "\n";
+    }
+}
+
+static void reportResult(AddResult result, int id, int lineNo) {
+    if (result == AddResult::DuplicateId) {
+        std::cerr << "line " << lineNo
+                  << ": duplicate order ID " << id << "\n";
+    } else if (result == AddResult::InvalidOrder) {
+        std::cerr << "line " << lineNo << ": invalid order\n";
+    }
+}
 
 static void processLine(OrderBook& book, const std::string& line, int lineNo) {
     std::istringstream in(line);
@@ -50,19 +69,44 @@ static void processLine(OrderBook& book, const std::string& line, int lineNo) {
         AddResult result = book.addOrder(
             {id, cmd == "BUY" ? Side::Buy : Side::Sell, price, qty}, trades);
 
-        for (const Trade& t : trades) {
-            std::cout << "TRADE buy#" << t.buyId
-                      << " sell#" << t.sellId
-                      << " price=" << t.price
-                      << " qty=" << t.quantity << "\n";
+        printTrades(trades);
+        reportResult(result, id, lineNo);
+
+    } else if (cmd == "MARKET") {
+        std::string sideText;
+        int id, qty;
+
+        if (!(in >> sideText >> id >> qty) || qty <= 0) {
+            std::cerr << "line " << lineNo
+                      << ": usage: MARKET <BUY|SELL> <id> <qty> (qty must be > 0)\n";
+            return;
         }
 
-        if (result == AddResult::DuplicateId) {
+        std::transform(sideText.begin(), sideText.end(), sideText.begin(),
+                       [](unsigned char c) {
+                           return std::toupper(c);
+                       });
+
+        if (sideText != "BUY" && sideText != "SELL") {
             std::cerr << "line " << lineNo
-                      << ": duplicate order ID " << id << "\n";
-        } else if (result == AddResult::InvalidOrder) {
-            std::cerr << "line " << lineNo << ": invalid order\n";
+                      << ": usage: MARKET <BUY|SELL> <id> <qty> (qty must be > 0)\n";
+            return;
         }
+
+        // Reject unexpected extra arguments.
+        std::string extra;
+        if (in >> extra) {
+            std::cerr << "line " << lineNo
+                      << ": unexpected extra argument '" << extra << "'\n";
+            return;
+        }
+
+        std::vector<Trade> trades;
+        AddResult result = book.addMarketOrder(
+            id, sideText == "BUY" ? Side::Buy : Side::Sell, qty, trades);
+
+        printTrades(trades);
+        reportResult(result, id, lineNo);
 
     } else if (cmd == "CANCEL") {
         int id;

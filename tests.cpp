@@ -188,6 +188,77 @@ static void testLargeQuantities() {
     CHECK(trades.size() == 1 && trades[0].quantity == 2000000000);
 }
 
+// ---- market order tests ----
+
+static std::vector<Trade> addMarket(OrderBook& book, int id, Side side, int qty,
+                                    AddResult expected = AddResult::Ok) {
+    std::vector<Trade> trades;
+    AddResult result = book.addMarketOrder(id, side, qty, trades);
+    CHECK(result == expected);
+    return trades;
+}
+
+static void testMarketBuyTakesBestPricesFirst() {
+    OrderBook book;
+    add(book, 1, Side::Sell, 102, 5);
+    add(book, 2, Side::Sell, 101, 3);
+    auto trades = addMarket(book, 3, Side::Buy, 6);
+    CHECK(trades.size() == 2);
+    CHECK(isTrade(trades[0], 3, 2, 101, 3));  // cheapest ask first
+    CHECK(isTrade(trades[1], 3, 1, 102, 3));
+    CHECK(book.cancelOrder(1));               // 2 left of order 1
+}
+
+static void testMarketSellTakesBestBidsFirst() {
+    OrderBook book;
+    add(book, 1, Side::Buy, 98, 5);
+    add(book, 2, Side::Buy, 100, 3);
+    auto trades = addMarket(book, 3, Side::Sell, 6);
+    CHECK(trades.size() == 2);
+    CHECK(isTrade(trades[0], 2, 3, 100, 3));  // highest bid first
+    CHECK(isTrade(trades[1], 1, 3, 98, 3));
+}
+
+static void testMarketOrderNeverRests() {
+    OrderBook book;
+    add(book, 1, Side::Sell, 100, 3);
+    auto trades = addMarket(book, 2, Side::Buy, 10);  // only 3 available
+    CHECK(trades.size() == 1 && trades[0].quantity == 3);
+    CHECK(!book.cancelOrder(2));  // leftover 7 was dropped, not resting
+
+    // so a later sell must not match anything
+    CHECK(add(book, 3, Side::Sell, 100, 5).empty());
+}
+
+static void testMarketOrderOnEmptyBook() {
+    OrderBook book;
+    CHECK(addMarket(book, 1, Side::Buy, 5).empty());
+    CHECK(addMarket(book, 2, Side::Sell, 5).empty());
+}
+
+static void testMarketOrderFifoAndPartialFill() {
+    OrderBook book;
+    add(book, 1, Side::Sell, 100, 5);
+    add(book, 2, Side::Sell, 100, 5);
+    auto trades = addMarket(book, 3, Side::Buy, 7);
+    CHECK(trades.size() == 2);
+    CHECK(isTrade(trades[0], 3, 1, 100, 5));
+    CHECK(isTrade(trades[1], 3, 2, 100, 2));
+    CHECK(book.cancelOrder(2));  // 3 left, still resting
+}
+
+static void testMarketOrderValidation() {
+    OrderBook book;
+    addMarket(book, 1, Side::Buy, 0, AddResult::InvalidOrder);
+    addMarket(book, 2, Side::Sell, -5, AddResult::InvalidOrder);
+
+    add(book, 3, Side::Sell, 100, 5);
+    addMarket(book, 3, Side::Buy, 1, AddResult::DuplicateId);  // id in use
+
+    addMarket(book, 4, Side::Buy, 1);                          // fills, id 4 used
+    addMarket(book, 4, Side::Buy, 1, AddResult::DuplicateId);
+}
+
 int main() {
     struct { const char* name; void (*fn)(); } tests[] = {
         {"full match", testFullMatch},
@@ -203,6 +274,12 @@ int main() {
         {"duplicate ids", testDuplicateIds},
         {"invalid orders", testInvalidOrders},
         {"large quantities", testLargeQuantities},
+        {"market buy: best prices first", testMarketBuyTakesBestPricesFirst},
+        {"market sell: best bids first", testMarketSellTakesBestBidsFirst},
+        {"market order never rests", testMarketOrderNeverRests},
+        {"market order on empty book", testMarketOrderOnEmptyBook},
+        {"market order FIFO and partial fill", testMarketOrderFifoAndPartialFill},
+        {"market order validation", testMarketOrderValidation},
     };
 
     for (const auto& t : tests) {

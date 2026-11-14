@@ -131,6 +131,33 @@ AddResult OrderBook::addOrder(const Order& order, std::vector<Trade>& trades) {
     return AddResult::Ok;
 }
 
+// Execute a market order: match at any price, never rest on the book.
+AddResult OrderBook::addMarketOrder(int id, Side side, int quantity,
+                                    std::vector<Trade>& trades) {
+
+    if (quantity <= 0) {
+        return AddResult::InvalidOrder;
+    }
+
+    if (!usedIds_.insert(id).second) {
+        return AddResult::DuplicateId;
+    }
+
+    // The price field is unused: trades always happen at the resting price.
+    Order incoming{id, side, 0, quantity};
+
+    auto anyPrice = [](long long) { return true; };
+
+    if (side == Side::Buy) {
+        matchAgainst(asks_, lookup_, incoming, trades, anyPrice);
+    } else {
+        matchAgainst(bids_, lookup_, incoming, trades, anyPrice);
+    }
+
+    // Whatever is left in incoming.quantity is discarded.
+    return AddResult::Ok;
+}
+
 // Cancel an existing resting order.
 bool OrderBook::cancelOrder(int id) {
 

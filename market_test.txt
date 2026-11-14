@@ -1,0 +1,18 @@
+SELL 1 101 5
+SELL 2 102 5
+BUY 3 99 4
+PRINT
+# market buy sweeps two levels: 5 @ 101, then 3 @ 102
+MARKET BUY 4 8
+PRINT
+# only 4 available on the bid side, the remaining 6 is dropped
+MARKET SELL 5 10
+PRINT
+# 2 are still left on the ask side (order 2), so this fills 2 and drops 3
+MARKET BUY 6 5
+# same id again -> duplicate
+MARKET BUY 6 5
+# invalid inputs
+MARKET SELL 7 0
+MARKET HOLD 8 5
+MARKET BUY 9 5 EXTRA
