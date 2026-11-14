@@ -68,3 +68,6 @@ Testing/
 .cache/
 orderbook
 tests
+bench
+bench_o0
+bench_o2
