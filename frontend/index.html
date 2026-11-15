@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OrderBook | Market Workstation</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- TOP NAVIGATION -->
+
+    <header class="topbar">
+
+        <div class="brand">
+            <div class="brand-icon">O</div>
+            <span>ORDERBOOK</span>
+            <span class="brand-version">ENGINE TERMINAL</span>
+        </div>
+
+        <div class="instrument">
+            <span class="instrument-label">INSTRUMENT</span>
+            <strong>OB-SIM</strong>
+            <span class="instrument-type">SPOT SIMULATION</span>
+        </div>
+
+        <div class="connection">
+            <span class="status-indicator"></span>
+            <span>DEMO ENVIRONMENT</span>
+        </div>
+
+    </header>
+
+
+    <main class="workspace">
+
+        <!-- MARKET SUMMARY -->
+
+        <section class="market-strip">
+
+            <div class="market-item">
+                <span class="market-label">BEST BID</span>
+                <strong class="positive" id="best-bid">10,004</strong>
+            </div>
+
+            <div class="market-item">
+                <span class="market-label">BEST ASK</span>
+                <strong class="negative" id="best-ask">10,005</strong>
+            </div>
+
+            <div class="market-item">
+                <span class="market-label">SPREAD</span>
+                <strong id="spread">1</strong>
+            </div>
+
+            <div class="market-item">
+                <span class="market-label">EXECUTED TRADES</span>
+                <strong id="total-trades">1,183,032</strong>
+            </div>
+
+            <div class="market-item market-status">
+                <span class="market-label">ENGINE STATUS</span>
+                <strong class="status-demo">SIMULATION</strong>
+            </div>
+
+        </section>
+
+
+        <!-- MAIN WORKSTATION -->
+
+        <section class="main-grid">
+
+
+            <!-- ORDER BOOK -->
+
+            <section class="terminal-panel orderbook-panel">
+
+                <div class="panel-title">
+                    <div>
+                        <h2>ORDER BOOK</h2>
+                        <span class="panel-subtitle">PRICE LEVELS · AGGREGATED QUANTITY</span>
+                    </div>
+
+                    <span class="panel-badge">DEPTH</span>
+                </div>
+
+
+                <div class="book-header">
+                    <span>PRICE</span>
+                    <span>QUANTITY</span>
+                    <span>TOTAL</span>
+                </div>
+
+
+                <!-- SELL ORDERS -->
+
+                <div class="book-section sell-section">
+
+                    <div class="side-heading negative">
+                        <span>ASKS / SELL</span>
+                        <span>5 LEVELS</span>
+                    </div>
+
+                    <div id="asks-list">
+
+                        <div class="book-row ask-row">
+                            <span>10,009</span>
+                            <span>15</span>
+                            <span>15</span>
+                        </div>
+
+                        <div class="book-row ask-row">
+                            <span>10,008</span>
+                            <span>22</span>
+                            <span>37</span>
+                        </div>
+
+                        <div class="book-row ask-row">
+                            <span>10,007</span>
+                            <span>18</span>
+                            <span>55</span>
+                        </div>
+
+                        <div class="book-row ask-row">
+                            <span>10,006</span>
+                            <span>30</span>
+                            <span>85</span>
+                        </div>
+
+                        <div class="book-row ask-row best-ask-row">
+                            <span>10,005</span>
+                            <span>12</span>
+                            <span>97</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SPREAD -->
+
+                <div class="spread-divider">
+                    <span>SPREAD</span>
+                    <strong>1 TICK</strong>
+                </div>
+
+
+                <!-- BUY ORDERS -->
+
+                <div class="book-section buy-section">
+
+                    <div class="side-heading positive">
+                        <span>BIDS / BUY</span>
+                        <span>5 LEVELS</span>
+                    </div>
+
+                    <div id="bids-list">
+
+                        <div class="book-row bid-row best-bid-row">
+                            <span>10,004</span>
+                            <span>25</span>
+                            <span>25</span>
+                        </div>
+
+                        <div class="book-row bid-row">
+                            <span>10,003</span>
+                            <span>16</span>
+                            <span>41</span>
+                        </div>
+
+                        <div class="book-row bid-row">
+                            <span>10,002</span>
+                            <span>32</span>
+                            <span>73</span>
+                        </div>
+
+                        <div class="book-row bid-row">
+                            <span>10,001</span>
+                            <span>20</span>
+                            <span>93</span>
+                        </div>
+
+                        <div class="book-row bid-row">
+                            <span>10,000</span>
+                            <span>14</span>
+                            <span>107</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="panel-footer">
+                    <span>PRICE-TIME PRIORITY</span>
+                    <span>AGGREGATED VIEW</span>
+                </div>
+
+            </section>
+
+
+
+            <!-- RECENT TRADES -->
+
+            <section class="terminal-panel trades-panel">
+
+                <div class="panel-title">
+                    <div>
+                        <h2>TRADE TAPE</h2>
+                        <span class="panel-subtitle">RECENT EXECUTIONS</span>
+                    </div>
+
+                    <span class="panel-badge">FILLS</span>
+                </div>
+
+
+                <div class="trades-header">
+                    <span>BUY ID</span>
+                    <span>SELL ID</span>
+                    <span>PRICE</span>
+                    <span>QTY</span>
+                </div>
+
+
+                <div id="trades-list">
+
+                    <div class="trade-row">
+                        <span>#101</span>
+                        <span>#102</span>
+                        <span>10,004</span>
+                        <span>5</span>
+                    </div>
+
+                    <div class="trade-row">
+                        <span>#103</span>
+                        <span>#104</span>
+                        <span>10,003</span>
+                        <span>8</span>
+                    </div>
+
+                    <div class="trade-row">
+                        <span>#105</span>
+                        <span>#106</span>
+                        <span>10,002</span>
+                        <span>3</span>
+                    </div>
+
+                    <div class="trade-row">
+                        <span>#107</span>
+                        <span>#108</span>
+                        <span>10,004</span>
+                        <span>10</span>
+                    </div>
+
+                    <div class="trade-row">
+                        <span>#109</span>
+                        <span>#110</span>
+                        <span>10,001</span>
+                        <span>4</span>
+                    </div>
+
+                </div>
+
+                <div class="empty-note">
+                    Showing sample executions
+                </div>
+
+            </section>
+
+
+
+            <!-- ORDER ENTRY -->
+
+            <section class="terminal-panel order-entry-panel">
+
+                <div class="panel-title">
+                    <div>
+                        <h2>ORDER ENTRY</h2>
+                        <span class="panel-subtitle">NEW ORDER TICKET</span>
+                    </div>
+
+                    <span class="panel-badge">MANUAL</span>
+                </div>
+
+
+                <form id="order-form">
+
+                    <div class="form-group">
+
+                        <label for="order-type">ORDER TYPE</label>
+
+                        <select id="order-type">
+                            <option value="LIMIT">LIMIT</option>
+                            <option value="MARKET">MARKET</option>
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>ORDER SIDE</label>
+
+                        <div class="side-selector">
+
+                            <label class="side-option buy-option">
+                                <input type="radio" name="side" value="BUY" checked>
+                                <span>BUY</span>
+                            </label>
+
+                            <label class="side-option sell-option">
+                                <input type="radio" name="side" value="SELL">
+                                <span>SELL</span>
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="order-price">LIMIT PRICE</label>
+
+                        <input
+                            type="number"
+                            id="order-price"
+                            placeholder="0.00"
+                            min="1"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="order-quantity">QUANTITY</label>
+
+                        <input
+                            type="number"
+                            id="order-quantity"
+                            placeholder="Enter quantity"
+                            min="1"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button type="submit" class="submit-btn">
+                        SUBMIT ORDER
+                    </button>
+
+                    <p id="form-message" class="form-message">
+                        DEMO MODE — NOT CONNECTED TO MATCHING ENGINE
+                    </p>
+
+                </form>
+
+            </section>
+
+        </section>
+
+
+
+        <!-- ACTIVE ORDERS -->
+
+        <section class="terminal-panel active-orders-panel">
+
+            <div class="panel-title">
+                <div>
+                    <h2>ACTIVE ORDERS</h2>
+                    <span class="panel-subtitle">RESTING ORDERS IN THE BOOK</span>
+                </div>
+
+                <span class="panel-badge">ORDERS</span>
+            </div>
+
+
+            <div class="active-header">
+                <span>ORDER ID</span>
+                <span>SIDE</span>
+                <span>PRICE</span>
+                <span>QUANTITY</span>
+                <span>STATUS</span>
+            </div>
+
+
+            <div id="active-orders-list">
+
+                <div class="active-row">
+                    <span>#201</span>
+                    <span class="positive">BUY</span>
+                    <span>10,004</span>
+                    <span>25</span>
+                    <span class="order-status">RESTING</span>
+                </div>
+
+                <div class="active-row">
+                    <span>#202</span>
+                    <span class="negative">SELL</span>
+                    <span>10,005</span>
+                    <span>12</span>
+                    <span class="order-status">RESTING</span>
+                </div>
+
+                <div class="active-row">
+                    <span>#203</span>
+                    <span class="positive">BUY</span>
+                    <span>10,003</span>
+                    <span>16</span>
+                    <span class="order-status">RESTING</span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- FOOTER -->
+
+        <footer class="terminal-footer">
+
+            <span>ORDERBOOK MATCHING ENGINE</span>
+            <span>C++17 · EDUCATIONAL SIMULATOR</span>
+            <span>FRONTEND DEMO</span>
+
+        </footer>
+
+    </main>
+
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
